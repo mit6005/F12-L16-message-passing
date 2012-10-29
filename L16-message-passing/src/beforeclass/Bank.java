@@ -21,7 +21,7 @@ public class Bank {
     
     /**
      * @param from     account to transfer from
-     * @param to       account to transfer to; requires from != to.
+     * @param to       account to transfer to
      * Modifies from and to by withdrawing 1 dollar from from and depositing it into to.
      */
     public void transfer(Account from, Account to) {
@@ -66,9 +66,7 @@ public class Bank {
         for (int i = 0; i < TRANSACTIONS_PER_MACHINE; ++i) {
             Account from = bank.accounts.get(0);
             Account to = bank.randomAccount();
-            if (from != to) {
-                bank.transfer(from, to);                
-            }
+            bank.transfer(from, to);
         }
     }
     

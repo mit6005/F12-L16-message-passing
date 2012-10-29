@@ -1,7 +1,8 @@
 package afterclass;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 // WARNING: This class suffers from deadlocks.
 public class Bank {
@@ -12,11 +13,11 @@ public class Bank {
         private int balance = 0;
     
         // a lock that protects this bank account from concurrent access
-        private Semaphore lock = new Semaphore(1);
+        private Lock lock = new ReentrantLock();
         // DON'T IMITATE THIS CODE.  Instead you should use the synchronized
         // keyword, which uses the lock built into every Java object.
-        // This example uses a Semaphore object so that we can show the explicit
-        // acquire() and release() operations.
+        // This example uses a Lock object so that we can show the explicit
+        // lock() and unlock() operations.
     }
     
     public Bank(int n) {
@@ -29,18 +30,18 @@ public class Bank {
     
     /**
      * @param from     account to transfer from
-     * @param to       account to transfer to; requires from != to.
+     * @param to       account to transfer to.
      * Modifies from and to by withdrawing 1 dollar from from and depositing it into to.
      */
     public void transfer(Account from, Account to) {
-        from.lock.acquireUninterruptibly();
-        to.lock.acquireUninterruptibly();
+        from.lock.lock();
+        to.lock.lock();
 
         from.balance = from.balance - 1;
         to.balance = to.balance + 1;
 
-        from.lock.release();
-        to.lock.release();
+        from.lock.unlock();
+        to.lock.unlock();
     }
     
     /**
@@ -49,7 +50,7 @@ public class Bank {
     public int audit() {
         // acquire the locks on all the accounts
         for (Account account : accounts) { 
-            account.lock.acquireUninterruptibly(); 
+            account.lock.lock(); 
         }
         
         // operations on the whole bank is now suspended
@@ -64,7 +65,7 @@ public class Bank {
         
         // release all the locks
         for (Account account : accounts) {
-            account.lock.release(); 
+            account.lock.unlock(); 
         }
         
         return sum;
@@ -92,9 +93,7 @@ public class Bank {
         for (int i = 0; i < TRANSACTIONS_PER_MACHINE; ++i) {
             Account from = bank.randomAccount();
             Account to = bank.randomAccount();
-            if (from != to) {
-                bank.transfer(from, to);                
-            }
+            bank.transfer(from, to);                
         }
     }
     
